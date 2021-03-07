@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "*.mak": "makefile",
+    "com.h": "c",
+    "array": "c",
+    "string_view": "c",
+    "initializer_list": "c",
+    "utility": "c",
+    "ranges": "c"
+  },
+}
