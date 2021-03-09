@@ -20,103 +20,43 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "version.h"
-#include "commands.h"
-#include "hal.h"
-#include "usb_device.h"
 
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+/* USER CODE BEGIN PFP */
 
-uint32_t systick_freq;
-volatile uint64_t systime = 0;
+/* USER CODE END PFP */
 
-#define xstr(s) str(s)
-#define str(s) #s
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
-volatile const fw_info_t fw_info __attribute__((section(".version_info"))) = {
-  .product_name = "STMLV",
-  .git_version = xstr(GIT_HASH),
-  .git_branch = xstr(GIT_BRANCH),
-  .build_user = xstr(USR),
-  .build_host = xstr(HOST),
-  .build_date = __DATE__,
-  .build_time = __TIME__,
-  .build_cc = xstr(BUILD_CC),
-  .cc_version = xstr(BUILD_CC_VERSION),
-  .major        = VERSION_MAJOR,
-  .minor        = VERSION_MINOR,
-  .patch        = VERSION_PATCH,
-};
-
-extern volatile const uint32_t bin_crc;
-extern volatile const uint32_t bin_size;
-
-void about(char *ptr) {
-  // bin_info_t *bin_info = &fw_info - sizeof(bin_info_t) / 4;
-  printf("*** BUILD INFO ***\n");
-  printf("crc: %u\n", bin_crc);
-  printf("size: %u\n", bin_size);
-  
-  printf("name: %s\n", fw_info.product_name);
-  printf("git hash: %s\n", fw_info.git_version);
-  printf("git branch: %s\n", fw_info.git_branch);
-  printf("version: %u.%u.%u\n", fw_info.major, fw_info.minor, fw_info.patch);
-
-  printf("usr: %s\n", fw_info.build_user);
-  printf("host: %s\n", fw_info.build_host);
-  printf("date: %s\n", fw_info.build_date);
-  printf("time: %s\n", fw_info.build_time);
-
-  printf("cc: %s\n", fw_info.build_cc);
-  printf("cc version: %s\n", fw_info.cc_version);
-}
-COMMAND("about", about, "print build info");
-
-void SysTick_Handler(void) {
-  HAL_IncTick();
-
-  systime++;
-  hal_run_rt();
-}
-
-uint32_t hal_get_systick_value() {
-  return (SysTick->VAL);
-}
-
-uint32_t hal_get_systick_reload() {
-  return (SysTick->LOAD);
-}
-
-uint32_t hal_get_systick_freq() {
-  return (systick_freq);
-}
-
-void bootloader(char *ptr) {
-  hal_stop();
-
-  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // en power block
-  PWR->CR |= PWR_CR_DBP; // disable write protection
-  RCC->BDCR |= 0x10 << RCC_BDCR_RTCSEL_Pos; // LSI -> RTC
-  RCC->BDCR |= RCC_BDCR_RTCEN; // LSI -> RTC
-
-  RTC->BKP0R = 0xDEADBEEF; // dfu trigger
-  HAL_NVIC_SystemReset();
-}
-COMMAND("bootloader", bootloader, "enter bootloader");
-
-void reset(char *ptr) {
-  hal_stop();
-
-  GPIOA->MODER &= ~GPIO_MODER_MODER12_Msk;
-  GPIOA->MODER |= GPIO_MODER_MODER12_0;
-  GPIOA->ODR &= ~GPIO_PIN_12;
-  HAL_Delay(100);
-
-  HAL_NVIC_SystemReset();
-}
-COMMAND("reset", reset, "reset STMLV");
-
+/* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
@@ -124,37 +64,66 @@ COMMAND("reset", reset, "reset STMLV");
   */
 int main(void)
 {
-  
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
   /* Configure the system clock */
   SystemClock_Config();
-  systick_freq = HAL_RCC_GetHCLKFreq();
 
-  RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN;
+  /* USER CODE BEGIN SysInit */
 
+  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  // MX_USB_DEVICE_Init();
+  MX_GPIO_Init();
+  /* USER CODE BEGIN 2 */
 
-  hal_init(1.0 / 5000.0, 0.0);
-  hal_parse("load term");
-  hal_parse("term0.rt_prio = 10");
+  void (*SysMemBootJump)(void);
+  volatile uint32_t addr = 0x1FFF0000;
+  SysMemBootJump = (void (*)(void))(*((uint32_t *)(addr + 4)));
 
-  hal_parse("flashloadconf");
-  hal_parse("loadconf");
+#define APP_START 0x08008000
+  void (*JumpToApplication)(void);
+  JumpToApplication = (void (*)(void))(*((uint32_t *)(APP_START + 4)));
 
-  hal_parse("start");
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // en power block
+  PWR->CR |= PWR_CR_DBP; // disable write protection
+  RCC->BDCR |= 0x10 << RCC_BDCR_RTCSEL_Pos; // LSI -> RTC
+  RCC->BDCR |= RCC_BDCR_RTCEN; // LSI -> RTC
 
-  // GPIOD->MODER |= GPIO_MODER_MODER3_0;
-  
+  if(RTC->BKP0R == 0xDEADBEEF){
+    RTC->BKP0R = 0;
+    SYSCFG->MEMRMP = 0x01;
+    __set_MSP(*(uint32_t *)addr);
+    SysMemBootJump();
+  }
+  else{
+    __set_MSP(*(__IO uint32_t *)APP_START);
+    JumpToApplication();
+  }
+
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   while (1)
   {
-    cdc_poll();
-    hal_run_nrt(); 
-    // GPIOD->ODR |= 1 << 3;
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -197,11 +166,25 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
-  // HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-  // HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-  // HAL_NVIC_EnableIRQ(SysTick_IRQn);
 }
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+}
+
+/* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.

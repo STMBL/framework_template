@@ -9,11 +9,11 @@
             "type": "cortex-debug",
             "servertype": "openocd",
             "request": "launch",
-             "name": "dbg f303 st-link",
+             "name": "dbg f4 st-link",
             "executable": "${workspaceRoot}/f4/build/fw.elf",
             "configFiles": [
                 "interface/stlink-v2.cfg",
-                "target/stm32f4x.cfg",
+                "target/stm32f4x_stlink.cfg",
             ],
             "svdFile": "${workspaceRoot}/f4/cpu.svd",
             "cwd": "${workspaceRoot}"

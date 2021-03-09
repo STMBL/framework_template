@@ -22,18 +22,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 
-/* USER CODE BEGIN INCLUDE */
+#include "ringbuf.h"
+#define RX_QUEUE_SIZE 1024
+#define TX_QUEUE_SIZE 1024
 
-/* USER CODE END INCLUDE */
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE END PV */
+struct ringbuf rx_buf = RINGBUF(RX_QUEUE_SIZE);
+struct ringbuf tx_buf = RINGBUF(TX_QUEUE_SIZE);
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @brief Usb device library.
@@ -319,6 +313,48 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   return result;
 }
 
+void cdc_usbtx() {
+  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef *)hUsbDeviceFS.pClassData;
+  if(hcdc->TxState != 0) {
+    return;  //busy
+  }
+  int len = rb_read(&tx_buf, UserTxBufferFS, sizeof(UserTxBufferFS));
+  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, len);
+  USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+}
+
+int cdc_tx(void *data, uint32_t len) {
+  if(cdc_is_connected()) {
+    int ret;
+    ret = rb_write(&tx_buf, data, len);
+    cdc_usbtx();
+    return ret;
+  } else {
+    return 0;
+  }
+}
+
+void cdc_poll() {
+  if(cdc_is_connected()) {
+    cdc_usbtx();
+  }
+}
+
+int cdc_is_connected() {
+  if(hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+int cdc_getline(char *ptr, int len) {
+  return rb_getline(&rx_buf, ptr, len);
+}
+
+int _write(int file, char *ptr, int len) {
+  return cdc_tx(ptr, len);
+}
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
