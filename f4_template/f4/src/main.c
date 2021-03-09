@@ -133,7 +133,6 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
   systick_freq = HAL_RCC_GetHCLKFreq();
-  __enable_irq();
 
   RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN | RCC_AHB1ENR_GPIOHEN;
 
