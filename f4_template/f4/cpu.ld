@@ -65,7 +65,7 @@ RAM (xrw)    : ORIGIN = 0x20000000, LENGTH = 128K
 CCMRAM (xrw) : ORIGIN = 0x10000000, LENGTH = 64K
 BOOT   (rx)  : ORIGIN = 0x08000000, LENGTH = 16K/* sector 0 */
 CONFIG (rx)  : ORIGIN = 0x08004000, LENGTH = 16K/* sector 1 */
-FLASH (rx)   : ORIGIN = 0x08008000, LENGTH = 480K
+FLASH (rx)   : ORIGIN = 0x08008000, LENGTH = 992K
 }
 
 /* Define output sections */

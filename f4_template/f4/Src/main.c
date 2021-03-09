@@ -124,7 +124,9 @@ COMMAND("reset", reset, "reset STMLV");
   */
 int main(void)
 {
-  
+  extern void *g_pfnVectors;
+  SCB->VTOR = (uint32_t)&g_pfnVectors;
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -147,14 +149,11 @@ int main(void)
   hal_parse("loadconf");
 
   hal_parse("start");
-
-  // GPIOD->MODER |= GPIO_MODER_MODER3_0;
   
   while (1)
   {
     cdc_poll();
     hal_run_nrt(); 
-    // GPIOD->ODR |= 1 << 3;
   }
 }
 

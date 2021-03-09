@@ -48,8 +48,10 @@ SOURCES += $(wildcard src/*.c)
 
 SRC_COMPS += $(wildcard src/comps/*.c)
 # SHARED_COMPS += $(wildcard ../shared/src/comps/*.c)
-LIB_COMPS += $(wildcard ../../framework/comps/curpid/*.c)
-LIB_COMPS += $(wildcard ../../framework/comps/*.c)
+# LIB_COMPS += $(wildcard ../../framework/comps/curpid/*.c)
+# LIB_COMPS += $(wildcard ../../framework/comps/*.c)
+LIB_COMPS += $(wildcard ../../framework/comps/term.c)
+LIB_COMPS += $(wildcard ../../framework/comps/sim.c)
 
 CONFIG_TEMPLATES += $(wildcard conf/template/*.txt)
 
