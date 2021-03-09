@@ -141,7 +141,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_USB_DEVICE_Init();
 
-  hal_init(1.0 / 5000.0, 0.0);
+  hal_init(1.0 / 1000.0, 0.0);
   hal_parse("load term");
   hal_parse("term0.rt_prio = 10");
 
