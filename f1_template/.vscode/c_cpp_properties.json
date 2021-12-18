@@ -1,0 +1,41 @@
+{
+    "configurations": [
+        {
+            "name": "stmbl",
+            "includePath": [
+                "${workspaceFolder}/../framework/libs/st_hal_f1/inc/**",
+                "${workspaceFolder}/../framework/libs/st_usb_f1/**",
+                "${workspaceFolder}/../framework/libs/CMSIS/Include/**",
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "STM32F103xC",
+                "USE_HAL_DRIVER"
+            ],
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/local/bin/arm-none-eabi-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "C++20",
+            "intelliSenseMode": "gcc-arm",
+            "compilerArgs": [
+                "-mthumb",
+                "-mcpu=cortex-m3",
+                "-std=C++20",
+                "-ffunction-sections",
+                "-fdata-sections",
+                "-Wall",
+                "-Wmaybe-uninitialized",
+                "-Wuninitialized",
+                "-fno-builtin",
+                "-nostartfiles",
+                "-Wfatal-errors",
+                "-fno-strict-aliasing",
+                "-fwrapv",
+                "-lm",
+                "-Wl,-Map=build/fw.map,--cref",
+                "-Wl,--gc-sections"
+            ]
+        }
+    ],
+    "version": 4
+}
